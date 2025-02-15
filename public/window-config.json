@@ -1,0 +1,22 @@
+[
+  {
+    "id": "positions",
+    "initialPos": {
+      "x": 0,
+      "y": 0
+    },
+    "initialSize": {
+      "scale": 1
+    }
+  },
+  {
+    "id": "battery",
+    "initialPos": {
+      "x": 0,
+      "y": 0
+    },
+    "initialSize": {
+      "scale": 1
+    }
+  }
+]

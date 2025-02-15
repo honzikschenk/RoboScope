@@ -2,6 +2,7 @@ import * as React from "react";
 import DataWindow from "./components/DataWindow";
 import { ErrorMessage } from "./components/ErrorLog";
 import { MotorPosition } from "./components/MotorPositions";
+import axios from "axios";
 
 // Sample data for the robot telemetry
 const initialMotorPositions: MotorPosition[] = [
@@ -92,13 +93,48 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Load window configuration from JSON file
+  React.useEffect(() => {
+    axios.get("/window-config.json")
+      .then((response) => {
+        if (response.data) {
+          console.log("Loaded window configuration:", response.data);
+          setGridItems(response.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error loading window configuration:", error);
+      });
+  }, []);
+
   const handleAddWindow = () => {
     const newWindow = {
       id: newWindowType,
       initialPos: { x: 0, y: 0 },
       initialSize: { scale: 1 },
     };
-    setGridItems([...gridItems, newWindow]);
+    console.log("Adding new window:", newWindow);
+    setGridItems((prevGridItems) => [...prevGridItems, newWindow]);
+  };
+
+  const handleRemoveWindow = (id: string) => {
+    console.log("Removing window:", id);
+    setGridItems((prevGridItems) => prevGridItems.filter(item => item.id !== id));
+  };
+
+  const handleSaveConfig = () => {
+    console.log("Saving window configuration:", gridItems);
+    axios.post("http://localhost:3000/save-window-config", gridItems)
+      .then(() => {
+        console.log("Window configuration saved successfully.");
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          console.error("Endpoint not found. Please check the server configuration.");
+        } else {
+          console.error("Error saving window configuration:", error);
+        }
+      });
   };
 
   return (
@@ -117,6 +153,7 @@ function Dashboard() {
             batteryLevel={item.id === "battery" ? batteryLevel : undefined}
             stepsCount={item.id === "steps" ? stepsCount : undefined}
             errors={item.id === "errors" ? errors : undefined}
+            removeWindow={handleRemoveWindow}
           />
         ))}
       </div>
@@ -137,6 +174,12 @@ function Dashboard() {
           className="p-2 bg-blue-500 text-white rounded"
         >
           Add Window
+        </button>
+        <button
+          onClick={handleSaveConfig}
+          className="p-2 bg-green-500 text-white rounded"
+        >
+          Save Config
         </button>
       </div>
     </div>

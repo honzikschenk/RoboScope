@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ArrowsPointingOutIcon, ArrowDownRightIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowsPointingOutIcon,
+  ArrowDownRightIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import MotorPositions from "./MotorPositions";
 import BatteryLevel from "./BatteryLevel";
 import StepCount from "./StepCount";
@@ -20,6 +24,7 @@ type DataWindowProps = {
   batteryLevel?: number;
   stepsCount?: number;
   errors?: ErrorMessage[];
+  removeWindow: (id: string) => void;
 };
 
 const useDraggableResizable = (
@@ -98,6 +103,7 @@ const DataWindow: React.FC<DataWindowProps> = ({
   batteryLevel,
   stepsCount,
   errors,
+  removeWindow,
 }) => {
   const {
     pos,
@@ -131,9 +137,22 @@ const DataWindow: React.FC<DataWindowProps> = ({
         >
           <ArrowDownRightIcon width={20} />
         </div>
-        {id === "positions" && motorPositions && <MotorPositions data={motorPositions} />}
-        {id === "battery" && batteryLevel !== undefined && <BatteryLevel level={batteryLevel} />}
-        {id === "steps" && stepsCount !== undefined && <StepCount count={stepsCount} />}
+        <button
+            title="Close window"
+          className="absolute top-0 right-0 w-6 h-6 bg-transparent text-gray-600 hover:text-gray-800"
+          onClick={() => removeWindow(id)}
+        >
+          <XMarkIcon width={10} />
+        </button>
+        {id === "positions" && motorPositions && (
+          <MotorPositions data={motorPositions} />
+        )}
+        {id === "battery" && batteryLevel !== undefined && (
+          <BatteryLevel level={batteryLevel} />
+        )}
+        {id === "steps" && stepsCount !== undefined && (
+          <StepCount count={stepsCount} />
+        )}
         {id === "errors" && errors && <ErrorLog errors={errors} />}
       </div>
     </div>
