@@ -1,12 +1,7 @@
 import * as React from "react";
-import {
-  ArrowsPointingOutIcon,
-  ArrowDownRightIcon,
-} from "@heroicons/react/24/solid";
-import BatteryLevel from "./components/BatteryLevel";
-import ErrorLog, { ErrorMessage } from "./components/ErrorLog";
-import MotorPositions, { MotorPosition } from "./components/MotorPositions";
-import StepCount from "./components/StepCount";
+import DataWindow from "./components/DataWindow";
+import { ErrorMessage } from "./components/ErrorLog";
+import { MotorPosition } from "./components/MotorPositions";
 
 // Sample data for the robot telemetry
 const initialMotorPositions: MotorPosition[] = [
@@ -63,75 +58,6 @@ const generateRandomStepsCount = (prevStepsCount: number): number => {
   return prevStepsCount + Math.floor(Math.random() * 100);
 };
 
-// Custom hook for draggable and resizable grid items
-const useDraggableResizable = (
-  id: string,
-  initialPos: { x: number; y: number },
-  initialSize: { scale: number }
-) => {
-  const [pos, setPos] = React.useState(initialPos);
-  const [size, setSize] = React.useState(initialSize);
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [isResizing, setIsResizing] = React.useState(false);
-
-  const handleDragStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    const startX = e.clientX - pos.x;
-    const startY = e.clientY - pos.y;
-
-    const handleDrag = (e: MouseEvent) => {
-      setPos({
-        x: e.clientX - startX,
-        y: e.clientY - startY,
-      });
-    };
-
-    const handleDragEnd = () => {
-      setIsDragging(false);
-      document.removeEventListener("mousemove", handleDrag);
-      document.removeEventListener("mouseup", handleDragEnd);
-    };
-
-    document.addEventListener("mousemove", handleDrag);
-    document.addEventListener("mouseup", handleDragEnd);
-  };
-
-  const handleResizeStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startScale = size.scale;
-
-    const handleResize = (e: MouseEvent) => {
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-      const newScale = Math.max(0.5, startScale + (deltaX + deltaY) / 200);
-      setSize({ scale: newScale });
-    };
-
-    const handleResizeEnd = () => {
-      setIsResizing(false);
-      document.removeEventListener("mousemove", handleResize);
-      document.removeEventListener("mouseup", handleResizeEnd);
-    };
-
-    document.addEventListener("mousemove", handleResize);
-    document.addEventListener("mouseup", handleResizeEnd);
-  };
-
-  return {
-    id,
-    pos,
-    size,
-    isDragging,
-    isResizing,
-    handleDragStart,
-    handleResizeStart,
-  };
-};
-
 // Main App component
 function Dashboard() {
   const [motorPositions, setMotorPositions] = React.useState<MotorPosition[]>(
@@ -141,6 +67,13 @@ function Dashboard() {
     React.useState<number>(initialBatteryLevel);
   const [stepsCount, setStepsCount] = React.useState<number>(initialStepsCount);
   const [errors, setErrors] = React.useState<ErrorMessage[]>(initialErrors);
+  const [gridItems, setGridItems] = React.useState([
+    { id: "positions", initialPos: { x: 0, y: 0 }, initialSize: { scale: 1 } },
+    { id: "battery", initialPos: { x: 320, y: 0 }, initialSize: { scale: 1 } },
+    { id: "steps", initialPos: { x: 0, y: 250 }, initialSize: { scale: 1 } },
+    { id: "errors", initialPos: { x: 320, y: 250 }, initialSize: { scale: 1 } },
+  ]);
+  const [newWindowType, setNewWindowType] = React.useState("positions");
 
   // Update data periodically
   React.useEffect(() => {
@@ -159,13 +92,14 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Define grid items with their initial positions and sizes
-  const gridItems = [
-    useDraggableResizable("positions", { x: 0, y: 0 }, { scale: 1 }),
-    useDraggableResizable("battery", { x: 320, y: 0 }, { scale: 1 }),
-    useDraggableResizable("steps", { x: 0, y: 250 }, { scale: 1 }),
-    useDraggableResizable("errors", { x: 320, y: 250 }, { scale: 1 }),
-  ];
+  const handleAddWindow = () => {
+    const newWindow = {
+      id: newWindowType,
+      initialPos: { x: 0, y: 0 },
+      initialSize: { scale: 1 },
+    };
+    setGridItems([...gridItems, newWindow]);
+  };
 
   return (
     <div className="p-4">
@@ -173,41 +107,37 @@ function Dashboard() {
         Bipedal Robot Telemetry Dashboard
       </h1>
       <div className="relative" style={{ height: "calc(100vh - 100px)" }}>
-        {gridItems.map((item) => (
-          <div
-            key={item.id}
-            className={`absolute ${
-              item.isDragging || item.isResizing ? "z-10" : ""
-            }`}
-            style={{
-              left: `${item.pos.x}px`,
-              top: `${item.pos.y}px`,
-              transform: `scale(${item.size.scale})`,
-              transformOrigin: "top left",
-            }}
-          >
-            <div className="bg-gray-600 rounded-lg shadow-lg p-4 pt-8 relative">
-              <div
-                className="absolute top-0 left-0 right-0 h-6 cursor-move bg-gray-400 rounded-t-lg flex items-center justify-center"
-                onMouseDown={item.handleDragStart}
-              >
-                <ArrowsPointingOutIcon width={20} />
-              </div>
-              <div
-                className="absolute bottom-1 right-1 w-6 h-6 cursor-se-resize flex items-center justify-center"
-                onMouseDown={item.handleResizeStart}
-              >
-                <ArrowDownRightIcon width={20} />
-              </div>
-              {item.id === "positions" && (
-                <MotorPositions data={motorPositions} />
-              )}
-              {item.id === "battery" && <BatteryLevel level={batteryLevel} />}
-              {item.id === "steps" && <StepCount count={stepsCount} />}
-              {item.id === "errors" && <ErrorLog errors={errors} />}
-            </div>
-          </div>
+        {gridItems.map((item, index) => (
+          <DataWindow
+            key={index}
+            id={item.id}
+            initialPos={item.initialPos}
+            initialSize={item.initialSize}
+            motorPositions={item.id === "positions" ? motorPositions : undefined}
+            batteryLevel={item.id === "battery" ? batteryLevel : undefined}
+            stepsCount={item.id === "steps" ? stepsCount : undefined}
+            errors={item.id === "errors" ? errors : undefined}
+          />
         ))}
+      </div>
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
+        <select
+          title="Select window type"
+          value={newWindowType}
+          onChange={(e) => setNewWindowType(e.target.value)}
+          className="p-2 rounded border border-gray-300"
+        >
+          <option value="positions">Motor Positions</option>
+          <option value="battery">Battery Level</option>
+          <option value="steps">Step Count</option>
+          <option value="errors">Error Log</option>
+        </select>
+        <button
+          onClick={handleAddWindow}
+          className="p-2 bg-blue-500 text-white rounded"
+        >
+          Add Window
+        </button>
       </div>
     </div>
   );
