@@ -1,66 +1,81 @@
 import * as React from "react";
 import { LineChart, XAxis, YAxis, Tooltip, Legend, Line } from "recharts";
-import { ArrowsPointingOutIcon, ArrowDownRightIcon } from '@heroicons/react/24/solid';
-import BatteryLevel from './components/BatteryLevel';
+import {
+  ArrowsPointingOutIcon,
+  ArrowDownRightIcon,
+} from "@heroicons/react/24/solid";
+import BatteryLevel from "./components/BatteryLevel";
+import ErrorLog, { ErrorMessage } from "./components/ErrorLog";
 
 // Define types for the data
 type MotorPosition = {
-    time: string;
-    motors: {
-        [motorName: string]: number;
-    };
-};
-
-type Error = {
-    id: number;
-    message: string;
-    severity: 'low' | 'medium' | 'high';
-};
-
-type TelemetryData = {
-    motorPositions: MotorPosition[];
-    batteryLevel: number;
-    stepsCount: number;
-    errors: Error[];
-};
-
-// Sample data for the robot telemetry
-const initialData: TelemetryData = {
-  motorPositions: [
-    { time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }), motors: { leftLeg: 35, rightLeg: 36, bleep: 35 } },
-  ],
-  batteryLevel: 85,
-  stepsCount: 1000,
-  errors: [
-    { id: 1, message: 'Minor calibration error', severity: 'low' },
-    { id: 2, message: 'Right ankle servo warning', severity: 'medium' },
-  ],
-};
-
-// Function to generate random data for updates
-const generateRandomData = (prevData: TelemetryData): TelemetryData => {
-  const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-  return {
-    motorPositions: [
-      ...prevData.motorPositions,
-      {
-        time,
-        motors: {
-            leftLeg: Math.floor(Math.random() * 10) + 30,
-            // leftLeg: prevData.motorPositions[prevData.motorPositions.length - 1].motors.leftLeg + 1,
-            rightLeg: Math.floor(Math.random() * 10) + 30,
-            bleep: Math.floor(Math.random() * 10) + 30
-        }
-      },
-    ].slice(-10),
-    batteryLevel: Math.max(0, Math.min(100, prevData.batteryLevel + Math.floor(Math.random() * 11) - 5)),
-    stepsCount: prevData.stepsCount + Math.floor(Math.random() * 100),
-    errors: prevData.errors,
+  time: string;
+  motors: {
+    [motorName: string]: number;
   };
 };
 
+// Sample data for the robot telemetry
+const initialMotorPositions: MotorPosition[] = [
+  {
+    time: new Date().toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    motors: { leftLeg: 35, rightLeg: 36, bleep: 35 },
+  },
+];
+
+const initialBatteryLevel = 85;
+const initialStepsCount = 1000;
+const initialErrors: ErrorMessage[] = [
+  { id: 1, message: "Minor calibration error", severity: "low" },
+  { id: 2, message: "Right ankle servo warning", severity: "medium" },
+  { id: 3, message: "Left knee servo error", severity: "high" },
+];
+
+// Function to generate random motor positions
+const generateRandomMotorPositions = (
+  prevMotorPositions: MotorPosition[]
+): MotorPosition[] => {
+  const time = new Date().toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return [
+    ...prevMotorPositions,
+    {
+      time,
+      motors: {
+        leftLeg: Math.floor(Math.random() * 10) + 30,
+        rightLeg: Math.floor(Math.random() * 10) + 30,
+        bleep: Math.floor(Math.random() * 10) + 30,
+      },
+    },
+  ].slice(-10);
+};
+
+// Function to generate random battery level
+const generateRandomBatteryLevel = (prevBatteryLevel: number): number => {
+  return Math.max(
+    0,
+    Math.min(100, prevBatteryLevel + Math.floor(Math.random() * 11) - 5)
+  );
+};
+
+// Function to generate random steps count
+const generateRandomStepsCount = (prevStepsCount: number): number => {
+  return prevStepsCount + Math.floor(Math.random() * 100);
+};
+
 // Custom hook for draggable and resizable grid items
-const useDraggableResizable = (id: string, initialPos: { x: number; y: number; }, initialSize: { scale: number; }) => {
+const useDraggableResizable = (
+  id: string,
+  initialPos: { x: number; y: number },
+  initialSize: { scale: number }
+) => {
   const [pos, setPos] = React.useState(initialPos);
   const [size, setSize] = React.useState(initialSize);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -81,12 +96,12 @@ const useDraggableResizable = (id: string, initialPos: { x: number; y: number; }
 
     const handleDragEnd = () => {
       setIsDragging(false);
-      document.removeEventListener('mousemove', handleDrag);
-      document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener("mousemove", handleDrag);
+      document.removeEventListener("mouseup", handleDragEnd);
     };
 
-    document.addEventListener('mousemove', handleDrag);
-    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener("mousemove", handleDrag);
+    document.addEventListener("mouseup", handleDragEnd);
   };
 
   const handleResizeStart = (e: React.MouseEvent) => {
@@ -105,15 +120,23 @@ const useDraggableResizable = (id: string, initialPos: { x: number; y: number; }
 
     const handleResizeEnd = () => {
       setIsResizing(false);
-      document.removeEventListener('mousemove', handleResize);
-      document.removeEventListener('mouseup', handleResizeEnd);
+      document.removeEventListener("mousemove", handleResize);
+      document.removeEventListener("mouseup", handleResizeEnd);
     };
 
-    document.addEventListener('mousemove', handleResize);
-    document.addEventListener('mouseup', handleResizeEnd);
+    document.addEventListener("mousemove", handleResize);
+    document.addEventListener("mouseup", handleResizeEnd);
   };
 
-  return { id, pos, size, isDragging, isResizing, handleDragStart, handleResizeStart };
+  return {
+    id,
+    pos,
+    size,
+    isDragging,
+    isResizing,
+    handleDragStart,
+    handleResizeStart,
+  };
 };
 
 // Component for displaying motor position data
@@ -125,20 +148,29 @@ const MotorPositions = ({ data }: { data: MotorPosition[] }) => (
       <YAxis />
       <Tooltip />
       <Legend />
-    {Object.keys(data[0].motors).map((motor) => {
-    const hashCode = (str: string) => {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash |= 0; // Convert to 32bit integer
-      }
-      return hash;
-    };
+      {Object.keys(data[0].motors).map((motor) => {
+        const hashCode = (str: string) => {
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = (hash << 5) - hash + char;
+            hash |= 0; // Convert to 32bit integer
+          }
+          return hash;
+        };
 
-    const randomColor = `#${((hashCode(motor) & 0x00FFFFFF) | 0x1000000).toString(16).substring(1)}`;
-      return <Line key={motor} type="monotone" dataKey={`motors.${motor}`} stroke={randomColor} />;
-    })}
+        const randomColor = `#${((hashCode(motor) & 0x00ffffff) | 0x1000000)
+          .toString(16)
+          .substring(1)}`;
+        return (
+          <Line
+            key={motor}
+            type="monotone"
+            dataKey={`motors.${motor}`}
+            stroke={randomColor}
+          />
+        );
+      })}
     </LineChart>
   </div>
 );
@@ -151,28 +183,28 @@ const StepCount = ({ count }: { count: number }) => (
   </div>
 );
 
-// Component for displaying error messages
-const ErrorLog = ({ errors }: { errors: Error[] }) => (
-  <div>
-    <h3 className="text-lg font-semibold mb-2">Error Log</h3>
-    <ul>
-      {errors.map((error) => (
-        <li key={error.id} className={`mb-2 p-2 rounded ${error.severity === 'low' ? 'bg-yellow-700' : 'bg-red-700'}`}>
-          {error.message}
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
 // Main App component
 function Dashboard() {
-  const [data, setData] = React.useState<TelemetryData>(initialData);
+  const [motorPositions, setMotorPositions] = React.useState<MotorPosition[]>(
+    initialMotorPositions
+  );
+  const [batteryLevel, setBatteryLevel] =
+    React.useState<number>(initialBatteryLevel);
+  const [stepsCount, setStepsCount] = React.useState<number>(initialStepsCount);
+  const [errors, setErrors] = React.useState<ErrorMessage[]>(initialErrors);
 
   // Update data periodically
   React.useEffect(() => {
     const interval = setInterval(() => {
-      setData((prevData) => generateRandomData(prevData));
+      setMotorPositions((prevMotorPositions) =>
+        generateRandomMotorPositions(prevMotorPositions)
+      );
+      setBatteryLevel((prevBatteryLevel) =>
+        generateRandomBatteryLevel(prevBatteryLevel)
+      );
+      setStepsCount((prevStepsCount) =>
+        generateRandomStepsCount(prevStepsCount)
+      );
     }, 1000);
 
     return () => clearInterval(interval);
@@ -180,25 +212,29 @@ function Dashboard() {
 
   // Define grid items with their initial positions and sizes
   const gridItems = [
-    useDraggableResizable('positions', { x: 0, y: 0 }, { scale: 1 }),
-    useDraggableResizable('battery', { x: 320, y: 0 }, { scale: 1 }),
-    useDraggableResizable('steps', { x: 0, y: 250 }, { scale: 1 }),
-    useDraggableResizable('errors', { x: 320, y: 250 }, { scale: 1 }),
+    useDraggableResizable("positions", { x: 0, y: 0 }, { scale: 1 }),
+    useDraggableResizable("battery", { x: 320, y: 0 }, { scale: 1 }),
+    useDraggableResizable("steps", { x: 0, y: 250 }, { scale: 1 }),
+    useDraggableResizable("errors", { x: 320, y: 250 }, { scale: 1 }),
   ];
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Bipedal Robot Telemetry Dashboard</h1>
-      <div className="relative" style={{ height: 'calc(100vh - 100px)' }}>
+      <h1 className="text-2xl font-bold mb-4">
+        Bipedal Robot Telemetry Dashboard
+      </h1>
+      <div className="relative" style={{ height: "calc(100vh - 100px)" }}>
         {gridItems.map((item) => (
           <div
             key={item.id}
-            className={`absolute ${item.isDragging || item.isResizing ? 'z-10' : ''}`}
+            className={`absolute ${
+              item.isDragging || item.isResizing ? "z-10" : ""
+            }`}
             style={{
               left: `${item.pos.x}px`,
               top: `${item.pos.y}px`,
               transform: `scale(${item.size.scale})`,
-              transformOrigin: 'top left',
+              transformOrigin: "top left",
             }}
           >
             <div className="bg-gray-600 rounded-lg shadow-lg p-4 pt-8 relative">
@@ -214,10 +250,12 @@ function Dashboard() {
               >
                 <ArrowDownRightIcon width={20} />
               </div>
-              {item.id === 'positions' && <MotorPositions data={data.motorPositions} />}
-              {item.id === 'battery' && <BatteryLevel level={data.batteryLevel} />}
-              {item.id === 'steps' && <StepCount count={data.stepsCount} />}
-              {item.id === 'errors' && <ErrorLog errors={data.errors} />}
+              {item.id === "positions" && (
+                <MotorPositions data={motorPositions} />
+              )}
+              {item.id === "battery" && <BatteryLevel level={batteryLevel} />}
+              {item.id === "steps" && <StepCount count={stepsCount} />}
+              {item.id === "errors" && <ErrorLog errors={errors} />}
             </div>
           </div>
         ))}
