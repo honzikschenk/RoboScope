@@ -1,12 +1,19 @@
 {
   "name": "roboscope",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "chart.js": "^4.4.7",
+    "datatables": "^1.10.18",
+    "electron": "^34.2.0",
+    "shadcn": "^2.3.0"
+  }
 }
