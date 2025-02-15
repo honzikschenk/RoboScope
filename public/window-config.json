@@ -1,6 +1,6 @@
 [
   {
-    "id": "positions",
+    "id": "battery",
     "initialPos": {
       "x": 0,
       "y": 0
@@ -10,7 +10,7 @@
     }
   },
   {
-    "id": "battery",
+    "id": "positions",
     "initialPos": {
       "x": 0,
       "y": 0
