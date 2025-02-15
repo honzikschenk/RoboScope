@@ -34,7 +34,7 @@ RoboScope is an application designed to monitor telemetry data from a bipedal ro
     npm start
     ```
 
-2. Open the application in your browser or Electron window.
+2. The application will open in an Electron window.
 
 ## Data Format
 
@@ -54,3 +54,17 @@ All telemetry data is passed through JSON objects via HTTP requests. Below is an
   }
 }
 ```
+
+## Directory Structure
+
+The `desktop` directory contains the following files:
+
+- `index.js`: Main entry point for the Electron app.
+- `index.html`: HTML file loaded into the Electron window.
+- `renderer.js`: Script for handling UI updates and data visualization.
+- `package.json`: Contains the dependencies and scripts for the Electron app.
+
+The `telemetry` directory contains the following files:
+
+- `index.js`: Module to handle telemetry data fetching and parsing.
+- `graphs.js`: Module to handle graph creation and updates.
