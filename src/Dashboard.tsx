@@ -1,19 +1,12 @@
 import * as React from "react";
-import { LineChart, XAxis, YAxis, Tooltip, Legend, Line } from "recharts";
 import {
   ArrowsPointingOutIcon,
   ArrowDownRightIcon,
 } from "@heroicons/react/24/solid";
 import BatteryLevel from "./components/BatteryLevel";
 import ErrorLog, { ErrorMessage } from "./components/ErrorLog";
-
-// Define types for the data
-type MotorPosition = {
-  time: string;
-  motors: {
-    [motorName: string]: number;
-  };
-};
+import MotorPositions, { MotorPosition } from "./components/MotorPositions";
+import StepCount from "./components/StepCount";
 
 // Sample data for the robot telemetry
 const initialMotorPositions: MotorPosition[] = [
@@ -138,50 +131,6 @@ const useDraggableResizable = (
     handleResizeStart,
   };
 };
-
-// Component for displaying motor position data
-const MotorPositions = ({ data }: { data: MotorPosition[] }) => (
-  <div>
-    <h3 className="text-lg font-semibold mb-2">Motor Positions</h3>
-    <LineChart width={300} height={200} data={data}>
-      <XAxis dataKey="time" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      {Object.keys(data[0].motors).map((motor) => {
-        const hashCode = (str: string) => {
-          let hash = 0;
-          for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-            hash |= 0; // Convert to 32bit integer
-          }
-          return hash;
-        };
-
-        const randomColor = `#${((hashCode(motor) & 0x00ffffff) | 0x1000000)
-          .toString(16)
-          .substring(1)}`;
-        return (
-          <Line
-            key={motor}
-            type="monotone"
-            dataKey={`motors.${motor}`}
-            stroke={randomColor}
-          />
-        );
-      })}
-    </LineChart>
-  </div>
-);
-
-// Component for displaying step count
-const StepCount = ({ count }: { count: number }) => (
-  <div>
-    <h3 className="text-lg font-semibold mb-2">Step Count</h3>
-    <div className="text-4xl font-bold text-center">{count}</div>
-  </div>
-);
 
 // Main App component
 function Dashboard() {
