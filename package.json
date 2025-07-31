@@ -66,16 +66,13 @@
       }
     ],
     "mac": {
-      "category": "public.app-category.developer-tools",
-      "icon": "public/vite.svg"
+      "category": "public.app-category.developer-tools"
     },
     "win": {
-      "target": "nsis",
-      "icon": "public/vite.svg"
+      "target": "nsis"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "public/vite.svg"
+      "target": "AppImage"
     }
   }
 }
