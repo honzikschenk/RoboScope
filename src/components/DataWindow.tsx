@@ -39,9 +39,9 @@ const useDraggableResizable = (
     const startY = e.clientY - pos.y;
 
     const handleDrag = (e: MouseEvent) => {
-      const headerHeight = 80; // Account for header
-      const footerHeight = 80; // Account for footer
-      const windowMargin = 20; // Margin from edges
+      const headerHeight = 64; // Actual header height (py-4 = 16px top/bottom + text height)
+      const footerHeight = 64; // Actual footer height (py-4 = 16px top/bottom + content height)
+      const windowMargin = 10; // Reduced margin from edges
       
       const newX = Math.max(windowMargin, Math.min(window.innerWidth - 320 * size.scale - windowMargin, e.clientX - startX));
       const newY = Math.max(headerHeight + windowMargin, Math.min(window.innerHeight - footerHeight - 240 * size.scale - windowMargin, e.clientY - startY));
@@ -141,8 +141,10 @@ const DataWindow: React.FC<DataWindowProps> = ({
 
   return (
     <div
-      className={`absolute transition-all duration-200 ${
-        isDragging || isResizing ? "z-20 scale-105" : "z-10"
+      className={`absolute ${
+        isDragging || isResizing 
+          ? "z-20 scale-105" 
+          : "z-10 transition-all duration-200"
       }`}
       style={{
         left: `${pos.x}px`,

@@ -69,10 +69,10 @@ function Dashboard() {
   const [stepsCount, setStepsCount] = React.useState<number>(initialStepsCount);
   const [errors] = React.useState<ErrorMessage[]>(initialErrors);
   const [gridItems, setGridItems] = React.useState([
-    { id: "positions", initialPos: { x: 0, y: 0 }, initialSize: { scale: 1 } },
-    { id: "battery", initialPos: { x: 320, y: 0 }, initialSize: { scale: 1 } },
-    { id: "steps", initialPos: { x: 0, y: 250 }, initialSize: { scale: 1 } },
-    { id: "errors", initialPos: { x: 320, y: 250 }, initialSize: { scale: 1 } },
+    { id: "positions", initialPos: { x: 20, y: 80 }, initialSize: { scale: 1 } },
+    { id: "battery", initialPos: { x: 360, y: 80 }, initialSize: { scale: 1 } },
+    { id: "steps", initialPos: { x: 700, y: 80 }, initialSize: { scale: 1 } },
+    { id: "errors", initialPos: { x: 20, y: 340 }, initialSize: { scale: 1 } },
   ]);
   const [newWindowType, setNewWindowType] = React.useState("positions");
 
@@ -111,17 +111,17 @@ function Dashboard() {
     // Calculate a smart position for the new window to avoid overlap
     const existingPositions = gridItems.map(item => ({ x: item.initialPos.x, y: item.initialPos.y }));
     let newX = 20;
-    let newY = 100;
+    let newY = 80;
     
     // Try to find a position that doesn't overlap with existing windows
     const windowWidth = 320;
-    const windowHeight = 240;
+    const windowHeight = 260; // Slightly larger to account for content
     const spacing = 20;
     
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 4; col++) {
         const testX = col * (windowWidth + spacing) + spacing;
-        const testY = row * (windowHeight + spacing) + 100;
+        const testY = row * (windowHeight + spacing) + 80; // Start below header
         
         const hasOverlap = existingPositions.some(pos => 
           Math.abs(pos.x - testX) < windowWidth && 
@@ -134,7 +134,7 @@ function Dashboard() {
           break;
         }
       }
-      if (newX !== 20 || newY !== 100) break;
+      if (newX !== 20 || newY !== 80) break;
     }
     
     const newWindow = {
