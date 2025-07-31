@@ -124,7 +124,12 @@ function Dashboard() {
 
   const handleSaveConfig = () => {
     console.log("Saving window configuration:", gridItems);
-    axios.post("http://localhost:3000/save-window-config", gridItems)
+    // Use port 3001 for Electron backend, fallback to 3000 for web version
+    const backendUrl = window.location.protocol === 'file:' || window.electronAPI 
+      ? "http://localhost:3001/save-window-config"
+      : "http://localhost:3000/save-window-config";
+    
+    axios.post(backendUrl, gridItems)
       .then(() => {
         console.log("Window configuration saved successfully.");
       })
