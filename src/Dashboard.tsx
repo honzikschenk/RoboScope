@@ -67,7 +67,7 @@ function Dashboard() {
   const [batteryLevel, setBatteryLevel] =
     React.useState<number>(initialBatteryLevel);
   const [stepsCount, setStepsCount] = React.useState<number>(initialStepsCount);
-  const [errors, setErrors] = React.useState<ErrorMessage[]>(initialErrors);
+  const [errors] = React.useState<ErrorMessage[]>(initialErrors);
   const [gridItems, setGridItems] = React.useState([
     { id: "positions", initialPos: { x: 0, y: 0 }, initialSize: { scale: 1 } },
     { id: "battery", initialPos: { x: 320, y: 0 }, initialSize: { scale: 1 } },
