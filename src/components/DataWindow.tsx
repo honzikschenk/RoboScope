@@ -3,6 +3,15 @@ import MotorPositions from "./MotorPositions";
 import BatteryLevel from "./BatteryLevel";
 import StepCount from "./StepCount";
 import ErrorLog, { ErrorMessage } from "./ErrorLog";
+import {
+  Battery100Icon,
+  CogIcon,
+  ChartBarIcon,
+  ExclamationTriangleIcon,
+  ArrowsPointingOutIcon,
+  XMarkIcon,
+  ArrowsRightLeftIcon
+} from "@heroicons/react/24/outline";
 
 type MotorPosition = {
   time: string;
@@ -101,12 +110,12 @@ const useDraggableResizable = (
 const getWindowIcon = (id: string) => {
   const type = id.split('-')[0]; // Extract type from id like "steps-1234567890"
   const iconMap = {
-    battery: '/icons/battery.svg',
-    positions: '/icons/motors.svg',
-    steps: '/icons/steps.svg',
-    errors: '/icons/error.svg',
+    battery: Battery100Icon,
+    positions: CogIcon,
+    steps: ChartBarIcon,
+    errors: ExclamationTriangleIcon,
   };
-  return iconMap[type as keyof typeof iconMap] || '/icons/motors.svg';
+  return iconMap[type as keyof typeof iconMap] || CogIcon;
 };
 
 const getWindowTitle = (id: string) => {
@@ -160,34 +169,22 @@ const DataWindow: React.FC<DataWindowProps> = ({
           onMouseDown={handleDragStart}
         >
           <div className="flex items-center space-x-3">
-            <img 
-              src={getWindowIcon(id)} 
-              alt={getWindowTitle(id)}
-              className="w-5 h-5 text-slate-300"
-              style={{ filter: 'invert(0.7)' }}
-            />
+            {React.createElement(getWindowIcon(id), {
+              className: "w-5 h-5 text-slate-300",
+              "aria-label": getWindowTitle(id)
+            })}
             <span className="text-slate-200 font-medium text-sm">
               {getWindowTitle(id)}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <img 
-              src="/icons/move.svg" 
-              alt="Move"
-              className="w-4 h-4 text-slate-400"
-              style={{ filter: 'invert(0.6)' }}
-            />
+            <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400" />
             <button
               title="Close window"
               className="w-6 h-6 bg-slate-600 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors duration-200"
               onClick={() => removeWindow(id)}
             >
-              <img 
-                src="/icons/close.svg" 
-                alt="Close"
-                className="w-3 h-3"
-                style={{ filter: 'invert(1)' }}
-              />
+              <XMarkIcon className="w-3 h-3 text-white" />
             </button>
           </div>
         </div>
@@ -211,12 +208,7 @@ const DataWindow: React.FC<DataWindowProps> = ({
           className="absolute bottom-1 right-1 w-6 h-6 cursor-se-resize flex items-center justify-center bg-slate-700 hover:bg-slate-600 rounded-tl-lg transition-colors duration-200"
           onMouseDown={handleResizeStart}
         >
-          <img 
-            src="/icons/resize.svg" 
-            alt="Resize"
-            className="w-4 h-4"
-            style={{ filter: 'invert(0.7)' }}
-          />
+          <ArrowsPointingOutIcon className="w-4 h-4 text-slate-300" />
         </div>
       </div>
     </div>
