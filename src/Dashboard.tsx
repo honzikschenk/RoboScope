@@ -108,9 +108,38 @@ function Dashboard() {
   }, []);
 
   const handleAddWindow = () => {
+    // Calculate a smart position for the new window to avoid overlap
+    const existingPositions = gridItems.map(item => ({ x: item.initialPos.x, y: item.initialPos.y }));
+    let newX = 20;
+    let newY = 100;
+    
+    // Try to find a position that doesn't overlap with existing windows
+    const windowWidth = 320;
+    const windowHeight = 240;
+    const spacing = 20;
+    
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 4; col++) {
+        const testX = col * (windowWidth + spacing) + spacing;
+        const testY = row * (windowHeight + spacing) + 100;
+        
+        const hasOverlap = existingPositions.some(pos => 
+          Math.abs(pos.x - testX) < windowWidth && 
+          Math.abs(pos.y - testY) < windowHeight
+        );
+        
+        if (!hasOverlap) {
+          newX = testX;
+          newY = testY;
+          break;
+        }
+      }
+      if (newX !== 20 || newY !== 100) break;
+    }
+    
     const newWindow = {
-      id: newWindowType,
-      initialPos: { x: 0, y: 0 },
+      id: `${newWindowType}-${Date.now()}`, // Add timestamp to make unique
+      initialPos: { x: newX, y: newY },
       initialSize: { scale: 1 },
     };
     console.log("Adding new window:", newWindow);
@@ -143,49 +172,53 @@ function Dashboard() {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Bipedal Robot Telemetry Dashboard
-      </h1>
-      <div className="relative" style={{ height: "calc(100vh - 100px)" }}>
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <header className="px-6 py-4 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+        <h1 className="text-2xl font-bold text-slate-100 tracking-tight">
+          RoboScope Dashboard
+        </h1>
+      </header>
+      <div className="flex-1 relative overflow-hidden">
         {gridItems.map((item, index) => (
           <DataWindow
             key={index}
             id={item.id}
             initialPos={item.initialPos}
             initialSize={item.initialSize}
-            motorPositions={item.id === "positions" ? motorPositions : undefined}
-            batteryLevel={item.id === "battery" ? batteryLevel : undefined}
-            stepsCount={item.id === "steps" ? stepsCount : undefined}
-            errors={item.id === "errors" ? errors : undefined}
+            motorPositions={item.id.startsWith("positions") ? motorPositions : undefined}
+            batteryLevel={item.id.startsWith("battery") ? batteryLevel : undefined}
+            stepsCount={item.id.startsWith("steps") ? stepsCount : undefined}
+            errors={item.id.startsWith("errors") ? errors : undefined}
             removeWindow={handleRemoveWindow}
           />
         ))}
       </div>
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
-        <select
-          title="Select window type"
-          value={newWindowType}
-          onChange={(e) => setNewWindowType(e.target.value)}
-          className="p-2 rounded border border-gray-300"
-        >
-          <option value="positions">Motor Positions</option>
-          <option value="battery">Battery Level</option>
-          <option value="steps">Step Count</option>
-          <option value="errors">Error Log</option>
-        </select>
-        <button
-          onClick={handleAddWindow}
-          className="p-2 bg-blue-500 text-white rounded"
-        >
-          Add Window
-        </button>
-        <button
-          onClick={handleSaveConfig}
-          className="p-2 bg-green-500 text-white rounded"
-        >
-          Save Config
-        </button>
+      <div className="px-6 py-4 bg-slate-800/50 backdrop-blur-sm border-t border-slate-700">
+        <div className="flex items-center justify-center space-x-4">
+          <select
+            title="Select window type"
+            value={newWindowType}
+            onChange={(e) => setNewWindowType(e.target.value)}
+            className="px-3 py-2 bg-slate-700 text-slate-100 rounded-lg border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          >
+            <option value="positions">Motor Positions</option>
+            <option value="battery">Battery Level</option>
+            <option value="steps">Step Count</option>
+            <option value="errors">Error Log</option>
+          </select>
+          <button
+            onClick={handleAddWindow}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+          >
+            Add Window
+          </button>
+          <button
+            onClick={handleSaveConfig}
+            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+          >
+            Save Config
+          </button>
+        </div>
       </div>
     </div>
   );

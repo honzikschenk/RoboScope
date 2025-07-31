@@ -1,9 +1,4 @@
 import * as React from "react";
-import {
-  ArrowsPointingOutIcon,
-  ArrowDownRightIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/solid";
 import MotorPositions from "./MotorPositions";
 import BatteryLevel from "./BatteryLevel";
 import StepCount from "./StepCount";
@@ -44,9 +39,16 @@ const useDraggableResizable = (
     const startY = e.clientY - pos.y;
 
     const handleDrag = (e: MouseEvent) => {
+      const headerHeight = 80; // Account for header
+      const footerHeight = 80; // Account for footer
+      const windowMargin = 20; // Margin from edges
+      
+      const newX = Math.max(windowMargin, Math.min(window.innerWidth - 320 * size.scale - windowMargin, e.clientX - startX));
+      const newY = Math.max(headerHeight + windowMargin, Math.min(window.innerHeight - footerHeight - 240 * size.scale - windowMargin, e.clientY - startY));
+      
       setPos({
-        x: e.clientX - startX,
-        y: e.clientY - startY,
+        x: newX,
+        y: newY,
       });
     };
 
@@ -62,6 +64,7 @@ const useDraggableResizable = (
 
   const handleResizeStart = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsResizing(true);
     const startX = e.clientX;
     const startY = e.clientY;
@@ -70,7 +73,7 @@ const useDraggableResizable = (
     const handleResize = (e: MouseEvent) => {
       const deltaX = e.clientX - startX;
       const deltaY = e.clientY - startY;
-      const newScale = Math.max(0.5, startScale + (deltaX + deltaY) / 200);
+      const newScale = Math.max(0.5, Math.min(2, startScale + (deltaX + deltaY) / 200));
       setSize({ scale: newScale });
     };
 
@@ -95,6 +98,28 @@ const useDraggableResizable = (
   };
 };
 
+const getWindowIcon = (id: string) => {
+  const type = id.split('-')[0]; // Extract type from id like "steps-1234567890"
+  const iconMap = {
+    battery: '/icons/battery.svg',
+    positions: '/icons/motors.svg',
+    steps: '/icons/steps.svg',
+    errors: '/icons/error.svg',
+  };
+  return iconMap[type as keyof typeof iconMap] || '/icons/motors.svg';
+};
+
+const getWindowTitle = (id: string) => {
+  const type = id.split('-')[0]; // Extract type from id like "steps-1234567890"
+  const titleMap = {
+    battery: 'Battery Level',
+    positions: 'Motor Positions',
+    steps: 'Step Count',
+    errors: 'Error Log',
+  };
+  return titleMap[type as keyof typeof titleMap] || 'Data Window';
+};
+
 const DataWindow: React.FC<DataWindowProps> = ({
   id,
   initialPos,
@@ -116,7 +141,9 @@ const DataWindow: React.FC<DataWindowProps> = ({
 
   return (
     <div
-      className={`absolute ${isDragging || isResizing ? "z-10" : ""}`}
+      className={`absolute transition-all duration-200 ${
+        isDragging || isResizing ? "z-20 scale-105" : "z-10"
+      }`}
       style={{
         left: `${pos.x}px`,
         top: `${pos.y}px`,
@@ -124,36 +151,71 @@ const DataWindow: React.FC<DataWindowProps> = ({
         transformOrigin: "top left",
       }}
     >
-      <div className="bg-gray-600 rounded-lg shadow-lg p-4 pt-8 relative">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-slate-700 backdrop-blur-sm relative overflow-hidden min-w-[320px]">
+        {/* Modern Header with Icon */}
         <div
-          className="absolute top-0 left-0 right-0 h-6 cursor-move bg-gray-400 rounded-t-lg flex items-center justify-center"
+          className="h-12 cursor-move bg-gradient-to-r from-slate-700 to-slate-600 flex items-center justify-between px-4 rounded-t-xl border-b border-slate-600"
           onMouseDown={handleDragStart}
         >
-          <ArrowsPointingOutIcon width={20} />
+          <div className="flex items-center space-x-3">
+            <img 
+              src={getWindowIcon(id)} 
+              alt={getWindowTitle(id)}
+              className="w-5 h-5 text-slate-300"
+              style={{ filter: 'invert(0.7)' }}
+            />
+            <span className="text-slate-200 font-medium text-sm">
+              {getWindowTitle(id)}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <img 
+              src="/icons/move.svg" 
+              alt="Move"
+              className="w-4 h-4 text-slate-400"
+              style={{ filter: 'invert(0.6)' }}
+            />
+            <button
+              title="Close window"
+              className="w-6 h-6 bg-slate-600 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors duration-200"
+              onClick={() => removeWindow(id)}
+            >
+              <img 
+                src="/icons/close.svg" 
+                alt="Close"
+                className="w-3 h-3"
+                style={{ filter: 'invert(1)' }}
+              />
+            </button>
+          </div>
         </div>
+        
+        {/* Content Area */}
+        <div className="p-6 text-slate-100">
+          {id.startsWith("positions") && motorPositions && (
+            <MotorPositions data={motorPositions} />
+          )}
+          {id.startsWith("battery") && batteryLevel !== undefined && (
+            <BatteryLevel level={batteryLevel} />
+          )}
+          {id.startsWith("steps") && stepsCount !== undefined && (
+            <StepCount count={stepsCount} />
+          )}
+          {id.startsWith("errors") && errors && <ErrorLog errors={errors} />}
+        </div>
+        
+        {/* Resize Handle */}
         <div
-          className="absolute bottom-1 right-1 w-6 h-6 cursor-se-resize flex items-center justify-center"
+          className="absolute bottom-1 right-1 w-6 h-6 cursor-se-resize flex items-center justify-center bg-slate-700 hover:bg-slate-600 rounded-tl-lg transition-colors duration-200"
           onMouseDown={handleResizeStart}
         >
-          <ArrowDownRightIcon width={20} />
+          <img 
+            src="/icons/resize.svg" 
+            alt="Resize"
+            className="w-4 h-4"
+            style={{ filter: 'invert(0.7)' }}
+          />
         </div>
-        <button
-            title="Close window"
-          className="absolute top-0 right-0 w-6 h-6 bg-transparent text-gray-600 hover:text-gray-800"
-          onClick={() => removeWindow(id)}
-        >
-          <XMarkIcon width={10} />
-        </button>
-        {id === "positions" && motorPositions && (
-          <MotorPositions data={motorPositions} />
-        )}
-        {id === "battery" && batteryLevel !== undefined && (
-          <BatteryLevel level={batteryLevel} />
-        )}
-        {id === "steps" && stepsCount !== undefined && (
-          <StepCount count={stepsCount} />
-        )}
-        {id === "errors" && errors && <ErrorLog errors={errors} />}
       </div>
     </div>
   );
