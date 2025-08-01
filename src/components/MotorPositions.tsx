@@ -11,32 +11,42 @@ export type MotorPosition = {
 // Component for displaying motor position data
 const MotorPositions = ({ data }: { data: MotorPosition[] }) => (
   <div>
-    <h3 className="text-lg font-semibold mb-2">Motor Positions</h3>
-    <LineChart width={300} height={200} data={data}>
-      <XAxis dataKey="time" />
-      <YAxis />
-      <Tooltip allowEscapeViewBox={{ x: true, y: true }} />
-      <Legend />
-      {Object.keys(data[0].motors).map((motor) => {
-        const hashCode = (str: string) => {
-          let hash = 0;
-          for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-            hash |= 0; // Convert to 32bit integer
-          }
-          return hash;
-        };
-
-        const randomColor = `#${((hashCode(motor) & 0x00ffffff) | 0x1000000)
-          .toString(16)
-          .substring(1)}`;
+    <LineChart width={280} height={200} data={data}>
+      <XAxis 
+        dataKey="time" 
+        tick={{ fill: '#cbd5e1', fontSize: 12 }}
+        axisLine={{ stroke: '#475569' }}
+        tickLine={{ stroke: '#475569' }}
+      />
+      <YAxis 
+        tick={{ fill: '#cbd5e1', fontSize: 12 }}
+        axisLine={{ stroke: '#475569' }}
+        tickLine={{ stroke: '#475569' }}
+      />
+      <Tooltip 
+        allowEscapeViewBox={{ x: true, y: true }}
+        contentStyle={{
+          backgroundColor: '#1e293b',
+          border: '1px solid #475569',
+          borderRadius: '8px',
+          color: '#e2e8f0'
+        }}
+      />
+      <Legend 
+        wrapperStyle={{ color: '#cbd5e1' }}
+      />
+      {Object.keys(data[0].motors).map((motor, index) => {
+        const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+        const color = colors[index % colors.length];
+        
         return (
           <Line
             key={motor}
             type="monotone"
             dataKey={`motors.${motor}`}
-            stroke={randomColor}
+            stroke={color}
+            strokeWidth={2}
+            dot={{ fill: color, strokeWidth: 2, r: 4 }}
           />
         );
       })}
