@@ -93,19 +93,72 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Load window configuration from JSON file
-  React.useEffect(() => {
-    axios.get("/window-config.json")
-      .then((response) => {
-        if (response.data) {
-          console.log("Loaded window configuration:", response.data);
-          setGridItems(response.data);
+  // Enhanced config management with better error handling and fallback options
+  const loadConfiguration = React.useCallback(async () => {
+    try {
+      // Try to load from server first
+      console.log("Loading window configuration from server...");
+      const response = await axios.get("/window-config.json");
+      if (response.data && Array.isArray(response.data)) {
+        console.log("Loaded window configuration from server:", response.data);
+        setGridItems(response.data);
+        return;
+      }
+    } catch (error) {
+      console.warn("Failed to load config from server:", error);
+    }
+
+    try {
+      // Fallback to localStorage
+      const savedConfig = localStorage.getItem('roboscope-window-config');
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        if (Array.isArray(config)) {
+          console.log("Loaded window configuration from localStorage:", config);
+          setGridItems(config);
+          return;
         }
-      })
-      .catch((error) => {
-        console.error("Error loading window configuration:", error);
-      });
+      }
+    } catch (error) {
+      console.warn("Failed to load config from localStorage:", error);
+    }
+
+    console.log("Using default window configuration");
   }, []);
+
+  // Load configuration on mount
+  React.useEffect(() => {
+    loadConfiguration();
+  }, [loadConfiguration]);
+
+  const saveConfiguration = React.useCallback(async () => {
+    try {
+      // Always save to localStorage as primary storage
+      localStorage.setItem('roboscope-window-config', JSON.stringify(gridItems));
+      console.log("Configuration saved to localStorage successfully");
+
+      // Try to save to server as backup
+      const backendUrl = window.location.protocol === 'file:' || window.electronAPI 
+        ? "http://localhost:3001/save-window-config"
+        : "http://localhost:3000/save-window-config";
+      
+      await axios.post(backendUrl, gridItems, {
+        timeout: 5000, // 5 second timeout
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log("Configuration also saved to server successfully");
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.warn("Server endpoint not available, configuration saved locally only");
+      } else if (error.code === 'ECONNABORTED') {
+        console.warn("Server save timed out, configuration saved locally only");
+      } else {
+        console.warn("Failed to save to server, configuration saved locally only:", error.message);
+      }
+    }
+  }, [gridItems]);
 
   const handleAddWindow = () => {
     // Calculate a smart position for the new window to avoid overlap
@@ -153,22 +206,7 @@ function Dashboard() {
 
   const handleSaveConfig = () => {
     console.log("Saving window configuration:", gridItems);
-    // Use port 3001 for Electron backend, fallback to 3000 for web version
-    const backendUrl = window.location.protocol === 'file:' || window.electronAPI 
-      ? "http://localhost:3001/save-window-config"
-      : "http://localhost:3000/save-window-config";
-    
-    axios.post(backendUrl, gridItems)
-      .then(() => {
-        console.log("Window configuration saved successfully.");
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          console.error("Endpoint not found. Please check the server configuration.");
-        } else {
-          console.error("Error saving window configuration:", error);
-        }
-      });
+    saveConfiguration();
   };
 
   return (
