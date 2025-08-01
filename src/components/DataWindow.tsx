@@ -48,7 +48,7 @@ const useDraggableResizable = (
     const startY = e.clientY - pos.y;
 
     const handleDrag = (e: MouseEvent) => {
-      const headerHeight = 64; // Actual header height (py-4 = 16px top/bottom + text height)
+      const headerHeight = 40; // Reduced to allow windows closer to the top
       const footerHeight = 64; // Actual footer height (py-4 = 16px top/bottom + content height)
       const windowMargin = 5; // Minimal margin from edges
       
@@ -152,8 +152,8 @@ const DataWindow: React.FC<DataWindowProps> = ({
     <div
       className={`absolute ${
         isDragging || isResizing 
-          ? "z-20 scale-105" 
-          : "z-10 transition-all duration-200"
+          ? "z-20" 
+          : "z-10"
       }`}
       style={{
         left: `${pos.x}px`,
@@ -181,10 +181,10 @@ const DataWindow: React.FC<DataWindowProps> = ({
             <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400" />
             <button
               title="Close window"
-              className="w-8 h-8 bg-slate-600/80 hover:bg-red-500 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 border border-slate-500 hover:border-red-400"
+              className="w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors duration-200"
               onClick={() => removeWindow(id)}
             >
-              <XMarkIcon className="w-4 h-4 text-white font-bold" />
+              <XMarkIcon className="w-3 h-3 text-white" />
             </button>
           </div>
         </div>
