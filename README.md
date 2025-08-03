@@ -16,8 +16,6 @@ A standalone cross-platform desktop application for monitoring robot telemetry d
 
 ## Quick Start
 
-### Option 1: Use as Desktop App (Recommended)
-
 1. **Install dependencies:**
    ```bash
    npm install
@@ -34,28 +32,6 @@ A standalone cross-platform desktop application for monitoring robot telemetry d
    npm run dist
    ```
    Creates distributables for your current platform in the `build/` directory.
-
-### Option 2: Use as Web App (Legacy)
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Start the backend server:**
-   ```bash
-   npm run backend
-   ```
-
-3. **In a separate terminal, start the frontend:**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser to:**
-   ```
-   http://localhost:5173
-   ```
 
 ## Building for Distribution
 
@@ -80,8 +56,6 @@ The built applications will be available in the `build/` directory.
 
 ## Development Scripts
 
-- `npm run dev` - Start Vite development server (web version)
-- `npm run backend` - Start Express backend server (web version)
 - `npm run electron` - Start Electron app (requires built frontend)
 - `npm run electron-dev` - Start both Vite and Electron in development mode
 - `npm run build` - Build the frontend for production
@@ -94,12 +68,12 @@ The built applications will be available in the `build/` directory.
 1. **Adding Windows**: Use the dropdown at the bottom to select a data type and click "Add Window"
 2. **Moving Windows**: Click and drag the top bar of any window
 3. **Resizing Windows**: Click and drag the resize handle at the bottom-right corner
-4. **Removing Windows**: Click the X button in the top-right corner of any window
+4. **Removing Windows**: Click the button in the top-right corner of any window
 5. **Saving Layout**: Click "Save Config" to persist your window arrangement
 
 ## Project Structure
 
-```
+```dir
 RoboScope/
 ├── src/                 # React frontend source code
 ├── electron/            # Electron main process and preload scripts
@@ -120,10 +94,7 @@ RoboScope/
 ## Architecture
 
 The application runs as a standalone Electron app with:
+
 - **Main Process**: Manages the application window and runs an integrated Express server
 - **Renderer Process**: Runs the React application in a secure context
 - **Preload Script**: Provides secure communication between main and renderer processes
-
-## Legacy Web Server
-
-The `server.js` file is kept for backward compatibility when running as a web application. In Electron mode, the Express server is integrated directly into the main process for better performance and easier deployment.
